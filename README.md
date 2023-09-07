@@ -23,10 +23,10 @@ Because this script is intended to run automatically without user interaction, a
 
 To generate a key pairing, execute the following commands while in the home directory in the terminal. Take note that a .ssh directory may already exist if you have logged on to Turing before, containing a `known_hosts` file:
 
-```
-mkdir .ssh
-cd .ssh
-ssh-keygen -t rsa
+```console
+foo@bar:~$ mkdir .ssh
+foo@bar:~$ cd .ssh
+foo@bar:~/.ssh$ ssh-keygen -t rsa
 ```
 
 After completing these commands, you should now have 2 more files in the `.ssh` directory: `id_rsa` and `id_rsa.pub`. The file with the `.pub` extension is your public key- this is an important distinction as <b>you should never share the contents of your private key</b>.
@@ -37,14 +37,14 @@ You now need to send the public key to Turing. This can be done using the `scp` 
 
 This sends a copy of the public key to your home directory on Turing. This isn't quite sufficient enough; you'll need to add the contents of this key to an `authorized_keys` file in a `.ssh` directory on Turing:
 
-```
-ssh your_username@turing.csce.uark.edu
-mkdir .ssh
-mv id_rsa.pub .ssh
-cd .ssh
-touch authorized_keys
-cat id_rsa.pub >> authorized_keys
-rm id_rsa.pub
+```console
+foo@bar:~$ ssh your_username@turing.csce.uark.edu
+your_username@turing:~$ mkdir .ssh
+your_username@turing:~$ mv id_rsa.pub .ssh
+your_username@turing:~$ cd .ssh
+your_username@turing:~/.ssh$ touch authorized_keys
+your_username@turing:~/.ssh$ cat id_rsa.pub >> authorized_keys
+your_username@turing:~/.ssh$ rm id_rsa.pub
 ```
 
 This chain of commands will log you on to Turing, make a corresponding `.ssh` directory, move the copy of the public key to that directory, and append the key contents to a file used for authorized key pairings.
@@ -55,11 +55,11 @@ For security reasons, I recommend making your `.ssh` directory on Turing and you
 
 This should be sufficient if you replace all instances of `turing` in the `push` script with `your_username@turing.csce.uark.edu`. If not, you'll need to create a `config` file in the `.ssh` directory on your local machine and add the following:
 
-```
+```ssh-config
 Host turing
   HostName turing.csce.uark.edu
   IdentitiesOnly yes
-  IdentityFile /your/home/directory/.ssh/id_rsa
+  IdentityFile ~/.ssh/id_rsa
   User your_username
 ```
 
