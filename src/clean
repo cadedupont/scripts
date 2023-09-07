@@ -1,0 +1,26 @@
+#! /bin/bash
+
+# This is a script to remove unwanted files from OneDrive directory on local machine
+# $CODE is the path to the OneDrive directory on local machine
+
+# Declare array of file extensions and directories to remove
+declare -a REMOVE=(
+    # MacOS system files
+    ".DS_Store"
+
+    # Java compilation files
+    ".class"
+
+    # Python compilation files
+    "__pycache__"
+
+    # Executables
+    ".exe"
+    ".out"
+)
+
+# Loop through array, remove found files and directories
+for i in "${REMOVE[@]}"
+do
+    find $CODE -name "*$i" -exec rm -rfv {} +
+done

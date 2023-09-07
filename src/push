@@ -1,0 +1,43 @@
+#! /bin/bash
+
+# This is a script to push files from OneDrive directory on local machine to Turing, UARK's CSCE server
+# Using CronJob to run this script every day at midnight to keep an up-to-date backup of my code on Turing
+
+# $CODE is the path to the OneDrive directory on local machine defined in ~/.zshrc
+# "turing" is configured in ~/.ssh/config to point to turing.csce.uark.edu, using my UARK username along with a private RSA key pair
+
+# Run clean script to remove unwanted files before file transfer
+clean
+
+# Declare array to store files and directories to be ignored by rsync operations
+declare -a IGNORE=(
+    ".git"
+    ".gitignore"
+    ".gitmodules"
+    "LICENSE"
+)
+
+# Add each file and directory to be ignored to the rsync ignore list
+for i in "${IGNORE[@]}"
+do
+    IGNORE_LIST="$IGNORE_LIST --exclude $i"
+done
+
+# Run rsync commands to push local files to Turing
+# --exclude public_html folder so it can be synced to a different location on Turing
+# --checksum flag compares files based on file size and checksums rather than timestamps to prevent unnecessary file transfers (OneDrive-specific issue)
+# --delete flag deletes files on the destination that are not present in the source directory (necessary that files are not pushed to home directory so that --delete flag does not remove required Bash configuration files on Turing)
+rsync -avz --checksum --delete --exclude public_html $IGNORE_LIST $CODE/ turing:~/code/ 
+rsync -avz --checksum --delete $IGNORE_LIST $CODE/public_html/ turing:~/public_html/
+
+# Run each command on Turing
+ssh turing << EOF
+    # Set permissions on home directory to 701 to prevent group users from accessing files while allowing execution of csce.uark.edu/~cldupont by others
+    chmod 701 ~
+
+    # Add execute permissions to directories and remove execute permissions from files in code directory
+    find ~/code -type d -exec chmod 700 {} + && find ~/code -type f -exec chmod 600 {} +
+
+    # Set public permissions on public_html directory
+    chmod -R 755 ~/public_html
+EOF
